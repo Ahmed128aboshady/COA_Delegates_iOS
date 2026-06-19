@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>archiveVersion</key>
-	<integer>1</integer>
+	<string>1</string>
 	<key>classes</key>
 	<dict/>
 	<key>objectVersion</key>
-	<integer>56</integer>
+	<string>56</string>
 	<key>objects</key>
 	<dict>
 		<key>00100101</key>
@@ -366,13 +366,13 @@
 		<key>00100301</key>
 		<dict>
 			<key>buildActionMask</key>
-			<integer>2147483647</integer>
+			<string>2147483647</string>
 			<key>files</key>
 			<array/>
 			<key>isa</key>
 			<string>PBXFrameworksBuildPhase</string>
 			<key>runOnlyForDeploymentPostprocessing</key>
-			<integer>0</integer>
+			<string>0</string>
 		</dict>
 		<key>00100401</key>
 		<dict>
@@ -616,7 +616,7 @@
 		<key>00100801</key>
 		<dict>
 			<key>buildActionMask</key>
-			<integer>2147483647</integer>
+			<string>2147483647</string>
 			<key>files</key>
 			<array>
 				<string>00100101</string>
@@ -642,29 +642,29 @@
 			<key>isa</key>
 			<string>PBXSourcesBuildPhase</string>
 			<key>runOnlyForDeploymentPostprocessing</key>
-			<integer>0</integer>
+			<string>0</string>
 		</dict>
 		<key>00100901</key>
 		<dict>
 			<key>buildActionMask</key>
-			<integer>2147483647</integer>
+			<string>2147483647</string>
 			<key>files</key>
 			<array/>
 			<key>isa</key>
 			<string>PBXResourcesBuildPhase</string>
 			<key>runOnlyForDeploymentPostprocessing</key>
-			<integer>0</integer>
+			<string>0</string>
 		</dict>
 		<key>00100A01</key>
 		<dict>
 			<key>attributes</key>
 			<dict>
 				<key>BuildIndependentTargetsInParallel</key>
-				<integer>1</integer>
+				<string>1</string>
 				<key>LastSwiftUpdateCheck</key>
-				<integer>1400</integer>
+				<string>1400</string>
 				<key>LastUpgradeCheck</key>
-				<integer>1400</integer>
+				<string>1400</string>
 				<key>TargetAttributes</key>
 				<dict>
 					<key>00100601</key>
@@ -685,7 +685,7 @@
 			<key>developmentRegion</key>
 			<string>en</string>
 			<key>hasScannedForEncodings</key>
-			<integer>0</integer>
+			<string>0</string>
 			<key>isa</key>
 			<string>PBXProject</string>
 			<key>knownRegions</key>
@@ -952,7 +952,7 @@
 				<key>CODE_SIGN_STYLE</key>
 				<string>Automatic</string>
 				<key>CURRENT_PROJECT_VERSION</key>
-				<integer>1</integer>
+				<string>1</string>
 				<key>DEVELOPMENT_ASSET_PATHS</key>
 				<string></string>
 				<key>ENABLE_PREVIEWS</key>
@@ -995,7 +995,7 @@
 				<key>CODE_SIGN_STYLE</key>
 				<string>Automatic</string>
 				<key>CURRENT_PROJECT_VERSION</key>
-				<integer>1</integer>
+				<string>1</string>
 				<key>DEVELOPMENT_ASSET_PATHS</key>
 				<string></string>
 				<key>ENABLE_PREVIEWS</key>
