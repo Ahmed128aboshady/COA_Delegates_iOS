@@ -20,21 +20,23 @@ workflows:
           echo "Xcode project initialization..."
       - name: Build Unsigned iOS App (.app)
         script: |
-          rm -rf ~/Library/Developer/Xcode/DerivedData
           xcodebuild \
             -project COA_Delegates_iOS.xcodeproj \
             -scheme COA_Delegates_iOS \
             -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
             -configuration Release \
+            -derivedDataPath build_output \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
+            SWIFT_STRICT_CONCURRENCY=minimal \
+            SWIFT_TREAT_WARNINGS_AS_ERRORS=NO \
             clean build
       - name: Packaging simulator and unsigned build
         script: |
           mkdir -p build
-          # Archive app product for output
-          cp -r ~/Library/Developer/Xcode/DerivedData/*/Build/Products/Release-iphonesimulator/COA_Delegates_iOS.app build/ 2>/dev/null || cp -r ~/Library/Developer/Xcode/DerivedData/*/Build/Products/Release-iphoneos/COA_Delegates_iOS.app build/ 2>/dev/null || true
+          cp -r build_output/Build/Products/Release-iphonesimulator/COA_Delegates_iOS.app build/
     artifacts:
       - build/*.app
-      - build/**/*.app
+
