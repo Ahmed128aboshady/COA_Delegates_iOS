@@ -47,6 +47,7 @@
 		00100211/* NotificationsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsScreen.swift; sourceTree = "<group>"; };
 		00100212/* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		00100213/* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		00100501/* COA_Delegates_iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "COA_Delegates_iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -213,7 +214,7 @@
 				LastUpgradeCheck = 1400;
 				TargetAttributes = {
 					00100601 = {
-						CreatedOnToolsVersion = 14.0;
+						CreatedOnToolsVersion = "14.0";
 						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
@@ -460,10 +461,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin PBXFileReference section */
-		00100501/* COA_Delegates_iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = COA_Delegates_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
-/* End PBXFileReference section */
 	};
 	rootObject = 00100A01/* Project object */;
 }
