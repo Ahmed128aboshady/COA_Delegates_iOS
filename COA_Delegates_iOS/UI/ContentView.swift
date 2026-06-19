@@ -161,7 +161,7 @@ struct ContentView: View {
     
     // Manage routing push/pop overlay sub-screens
     @ViewBuilder
-    private func presentSubScreen(_ screen: AppScreen) -> View {
+    private func presentSubScreen(_ screen: AppScreen) -> some View {
         switch screen {
         case .customerDetail(let customerId):
             if let customer = viewModel.customers.first(where: { $0.id == customerId }) {

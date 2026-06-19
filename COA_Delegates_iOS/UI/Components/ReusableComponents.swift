@@ -104,7 +104,7 @@ struct EmptyState: View {
     let icon: String
     let message: String
     var actionLabel: String? = nil
-    var onAction: (() -> View)? = nil
+    var onAction: (() -> Void)? = nil
     
     var body: some View {
         VStack(spacing: 16) {

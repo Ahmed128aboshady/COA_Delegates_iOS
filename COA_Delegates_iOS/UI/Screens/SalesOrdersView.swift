@@ -199,7 +199,7 @@ struct CreateSalesOrderScreen: View {
     
     // --- Step 1: Select Customer ---
     @ViewBuilder
-    private func stepSelectCustomer() -> View {
+    private func stepSelectCustomer() -> some View {
         VStack(spacing: 12) {
             SearchBar(text: $customerSearch, placeholder: "بحث عن عميل...")
                 .padding(.top, 12)
@@ -255,7 +255,7 @@ struct CreateSalesOrderScreen: View {
     
     // --- Step 2: Add Products ---
     @ViewBuilder
-    private func stepAddProducts() -> View {
+    private func stepAddProducts() -> some View {
         VStack(spacing: 12) {
             HStack {
                 Text("المنتجات المضافة (\(addedItems.count))")
@@ -363,7 +363,7 @@ struct CreateSalesOrderScreen: View {
     
     // --- Step 3: Review Order ---
     @ViewBuilder
-    private func stepReviewOrder() -> View {
+    private func stepReviewOrder() -> some View {
         VStack(spacing: 20) {
             ScrollView {
                 VStack(alignment: .trailing, spacing: 16) {
@@ -450,7 +450,7 @@ struct CreateSalesOrderScreen: View {
     
     // --- Product Picker Sheet ---
     @ViewBuilder
-    private func productPickerSheet() -> View {
+    private func productPickerSheet() -> some View {
         VStack {
             Text("اختر المنتج المراد إضافته")
                 .font(.headline)
