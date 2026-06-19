@@ -2,10 +2,6 @@ import Foundation
 import CoreLocation
 import UIKit
 
-#if os(iOS)
-import BatteryCenter
-#endif
-
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     static let shared = LocationManager()
     
