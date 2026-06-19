@@ -101,6 +101,14 @@ struct NotificationRecord: Identifiable {
 class DatabaseManager {
     static let shared = DatabaseManager()
     private var db: OpaquePointer?
+
+    private func readString(_ stmt: OpaquePointer?, _ col: Int32) -> String {
+        if let ptr = sqlite3_column_text(stmt, col) {
+            return String(cString: ptr)
+        }
+        return ""
+    }
+
     
     private init() {
         openDatabase()
@@ -294,12 +302,12 @@ class DatabaseManager {
         var user: UserRecord?
         if sqlite3_step(stmt) == SQLITE_ROW {
             let id = sqlite3_column_int64(stmt, 0)
-            let username = String(cString: sqlite3_column_text(stmt, 1))
-            let passwordHash = String(cString: sqlite3_column_text(stmt, 2))
-            let name = String(cString: sqlite3_column_text(stmt, 3))
-            let phone = String(cString: sqlite3_column_text(stmt, 4))
-            let region = String(cString: sqlite3_column_text(stmt, 5))
-            let role = String(cString: sqlite3_column_text(stmt, 6))
+            let username = readString(stmt, 1)
+            let passwordHash = readString(stmt, 2)
+            let name = readString(stmt, 3)
+            let phone = readString(stmt, 4)
+            let region = readString(stmt, 5)
+            let role = readString(stmt, 6)
             let isActive = sqlite3_column_int(stmt, 7) == 1
             let createdAt = sqlite3_column_int64(stmt, 8)
             
@@ -345,10 +353,10 @@ class DatabaseManager {
         while sqlite3_step(stmt) == SQLITE_ROW {
             let id = sqlite3_column_int64(stmt, 0)
             let odooId = sqlite3_column_type(stmt, 1) == SQLITE_NULL ? nil : Int(sqlite3_column_int(stmt, 1))
-            let name = String(cString: sqlite3_column_text(stmt, 2))
-            let address = String(cString: sqlite3_column_text(stmt, 3))
-            let phone = String(cString: sqlite3_column_text(stmt, 4))
-            let email = String(cString: sqlite3_column_text(stmt, 5))
+            let name = readString(stmt, 2)
+            let address = readString(stmt, 3)
+            let phone = readString(stmt, 4)
+            let email = readString(stmt, 5)
             let balance = sqlite3_column_double(stmt, 6)
             let isSynced = sqlite3_column_int(stmt, 7) == 1
             let createdAt = sqlite3_column_int64(stmt, 8)
@@ -371,10 +379,10 @@ class DatabaseManager {
         if sqlite3_step(stmt) == SQLITE_ROW {
             let id = sqlite3_column_int64(stmt, 0)
             let odooId = sqlite3_column_type(stmt, 1) == SQLITE_NULL ? nil : Int(sqlite3_column_int(stmt, 1))
-            let name = String(cString: sqlite3_column_text(stmt, 2))
-            let address = String(cString: sqlite3_column_text(stmt, 3))
-            let phone = String(cString: sqlite3_column_text(stmt, 4))
-            let email = String(cString: sqlite3_column_text(stmt, 5))
+            let name = readString(stmt, 2)
+            let address = readString(stmt, 3)
+            let phone = readString(stmt, 4)
+            let email = readString(stmt, 5)
             let balance = sqlite3_column_double(stmt, 6)
             let isSynced = sqlite3_column_int(stmt, 7) == 1
             let createdAt = sqlite3_column_int64(stmt, 8)
@@ -396,10 +404,10 @@ class DatabaseManager {
         if sqlite3_step(stmt) == SQLITE_ROW {
             let id = sqlite3_column_int64(stmt, 0)
             let odooIdVal = Int(sqlite3_column_int(stmt, 1))
-            let name = String(cString: sqlite3_column_text(stmt, 2))
-            let address = String(cString: sqlite3_column_text(stmt, 3))
-            let phone = String(cString: sqlite3_column_text(stmt, 4))
-            let email = String(cString: sqlite3_column_text(stmt, 5))
+            let name = readString(stmt, 2)
+            let address = readString(stmt, 3)
+            let phone = readString(stmt, 4)
+            let email = readString(stmt, 5)
             let balance = sqlite3_column_double(stmt, 6)
             let isSynced = sqlite3_column_int(stmt, 7) == 1
             let createdAt = sqlite3_column_int64(stmt, 8)
@@ -467,12 +475,12 @@ class DatabaseManager {
         while sqlite3_step(stmt) == SQLITE_ROW {
             let id = sqlite3_column_int64(stmt, 0)
             let odooId = sqlite3_column_type(stmt, 1) == SQLITE_NULL ? nil : Int(sqlite3_column_int(stmt, 1))
-            let name = String(cString: sqlite3_column_text(stmt, 2))
-            let sku = String(cString: sqlite3_column_text(stmt, 3))
+            let name = readString(stmt, 2)
+            let sku = readString(stmt, 3)
             let price = sqlite3_column_double(stmt, 4)
             let stockQty = Int(sqlite3_column_int(stmt, 5))
-            let category = String(cString: sqlite3_column_text(stmt, 6))
-            let unit = String(cString: sqlite3_column_text(stmt, 7))
+            let category = readString(stmt, 6)
+            let unit = readString(stmt, 7)
             let isSynced = sqlite3_column_int(stmt, 8) == 1
             
             list.append(ProductRecord(id: id, odooId: odooId, name: name, sku: sku, price: price, stockQty: stockQty, category: category, unit: unit, isSynced: isSynced))
@@ -493,12 +501,12 @@ class DatabaseManager {
         if sqlite3_step(stmt) == SQLITE_ROW {
             let id = sqlite3_column_int64(stmt, 0)
             let odooId = sqlite3_column_type(stmt, 1) == SQLITE_NULL ? nil : Int(sqlite3_column_int(stmt, 1))
-            let name = String(cString: sqlite3_column_text(stmt, 2))
-            let sku = String(cString: sqlite3_column_text(stmt, 3))
+            let name = readString(stmt, 2)
+            let sku = readString(stmt, 3)
             let price = sqlite3_column_double(stmt, 4)
             let stockQty = Int(sqlite3_column_int(stmt, 5))
-            let category = String(cString: sqlite3_column_text(stmt, 6))
-            let unit = String(cString: sqlite3_column_text(stmt, 7))
+            let category = readString(stmt, 6)
+            let unit = readString(stmt, 7)
             let isSynced = sqlite3_column_int(stmt, 8) == 1
             
             record = ProductRecord(id: id, odooId: odooId, name: name, sku: sku, price: price, stockQty: stockQty, category: category, unit: unit, isSynced: isSynced)
@@ -518,12 +526,12 @@ class DatabaseManager {
         if sqlite3_step(stmt) == SQLITE_ROW {
             let id = sqlite3_column_int64(stmt, 0)
             let odooIdVal = Int(sqlite3_column_int(stmt, 1))
-            let name = String(cString: sqlite3_column_text(stmt, 2))
-            let sku = String(cString: sqlite3_column_text(stmt, 3))
+            let name = readString(stmt, 2)
+            let sku = readString(stmt, 3)
             let price = sqlite3_column_double(stmt, 4)
             let stockQty = Int(sqlite3_column_int(stmt, 5))
-            let category = String(cString: sqlite3_column_text(stmt, 6))
-            let unit = String(cString: sqlite3_column_text(stmt, 7))
+            let category = readString(stmt, 6)
+            let unit = readString(stmt, 7)
             let isSynced = sqlite3_column_int(stmt, 8) == 1
             
             record = ProductRecord(id: id, odooId: odooIdVal, name: name, sku: sku, price: price, stockQty: stockQty, category: category, unit: unit, isSynced: isSynced)
@@ -610,13 +618,13 @@ class DatabaseManager {
             let id = sqlite3_column_int64(stmt, 0)
             let odooId = sqlite3_column_type(stmt, 1) == SQLITE_NULL ? nil : Int(sqlite3_column_int(stmt, 1))
             let customerId = sqlite3_column_int64(stmt, 2)
-            let customerName = String(cString: sqlite3_column_text(stmt, 3))
+            let customerName = readString(stmt, 3)
             let date = sqlite3_column_int64(stmt, 4)
             let subtotal = sqlite3_column_double(stmt, 5)
             let tax = sqlite3_column_double(stmt, 6)
             let grandTotal = sqlite3_column_double(stmt, 7)
-            let status = String(cString: sqlite3_column_text(stmt, 8))
-            let notes = String(cString: sqlite3_column_text(stmt, 9))
+            let status = readString(stmt, 8)
+            let notes = readString(stmt, 9)
             let isSynced = sqlite3_column_int(stmt, 10) == 1
             let createdAt = sqlite3_column_int64(stmt, 11)
             
@@ -639,7 +647,7 @@ class DatabaseManager {
             let id = sqlite3_column_int64(stmt, 0)
             let orderIdVal = sqlite3_column_int64(stmt, 1)
             let productId = sqlite3_column_int64(stmt, 2)
-            let productName = String(cString: sqlite3_column_text(stmt, 3))
+            let productName = readString(stmt, 3)
             let quantity = Int(sqlite3_column_int(stmt, 4))
             let unitPrice = sqlite3_column_double(stmt, 5)
             let total = sqlite3_column_double(stmt, 6)
@@ -662,13 +670,13 @@ class DatabaseManager {
             let id = sqlite3_column_int64(stmt, 0)
             let odooId = sqlite3_column_type(stmt, 1) == SQLITE_NULL ? nil : Int(sqlite3_column_int(stmt, 1))
             let customerId = sqlite3_column_int64(stmt, 2)
-            let customerName = String(cString: sqlite3_column_text(stmt, 3))
+            let customerName = readString(stmt, 3)
             let date = sqlite3_column_int64(stmt, 4)
             let subtotal = sqlite3_column_double(stmt, 5)
             let tax = sqlite3_column_double(stmt, 6)
             let grandTotal = sqlite3_column_double(stmt, 7)
-            let status = String(cString: sqlite3_column_text(stmt, 8))
-            let notes = String(cString: sqlite3_column_text(stmt, 9))
+            let status = readString(stmt, 8)
+            let notes = readString(stmt, 9)
             let isSynced = sqlite3_column_int(stmt, 10) == 1
             let createdAt = sqlite3_column_int64(stmt, 11)
             
@@ -722,12 +730,12 @@ class DatabaseManager {
             let id = sqlite3_column_int64(stmt, 0)
             let odooId = sqlite3_column_type(stmt, 1) == SQLITE_NULL ? nil : Int(sqlite3_column_int(stmt, 1))
             let customerId = sqlite3_column_int64(stmt, 2)
-            let customerName = String(cString: sqlite3_column_text(stmt, 3))
+            let customerName = readString(stmt, 3)
             let amount = sqlite3_column_double(stmt, 4)
-            let method = String(cString: sqlite3_column_text(stmt, 5))
-            let checkNumber = String(cString: sqlite3_column_text(stmt, 6))
+            let method = readString(stmt, 5)
+            let checkNumber = readString(stmt, 6)
             let checkDate = sqlite3_column_int64(stmt, 7)
-            let notes = String(cString: sqlite3_column_text(stmt, 8))
+            let notes = readString(stmt, 8)
             let date = sqlite3_column_int64(stmt, 9)
             let isSynced = sqlite3_column_int(stmt, 10) == 1
             let createdAt = sqlite3_column_int64(stmt, 11)
@@ -749,12 +757,12 @@ class DatabaseManager {
             let id = sqlite3_column_int64(stmt, 0)
             let odooId = sqlite3_column_type(stmt, 1) == SQLITE_NULL ? nil : Int(sqlite3_column_int(stmt, 1))
             let customerId = sqlite3_column_int64(stmt, 2)
-            let customerName = String(cString: sqlite3_column_text(stmt, 3))
+            let customerName = readString(stmt, 3)
             let amount = sqlite3_column_double(stmt, 4)
-            let method = String(cString: sqlite3_column_text(stmt, 5))
-            let checkNumber = String(cString: sqlite3_column_text(stmt, 6))
+            let method = readString(stmt, 5)
+            let checkNumber = readString(stmt, 6)
             let checkDate = sqlite3_column_int64(stmt, 7)
-            let notes = String(cString: sqlite3_column_text(stmt, 8))
+            let notes = readString(stmt, 8)
             let date = sqlite3_column_int64(stmt, 9)
             let isSynced = sqlite3_column_int(stmt, 10) == 1
             let createdAt = sqlite3_column_int64(stmt, 11)
@@ -805,7 +813,7 @@ class DatabaseManager {
             let speed = Float(sqlite3_column_double(stmt, 4))
             let timestamp = sqlite3_column_int64(stmt, 5)
             let batteryLevel = Int(sqlite3_column_int(stmt, 6))
-            let connectionType = String(cString: sqlite3_column_text(stmt, 7))
+            let connectionType = readString(stmt, 7)
             let isSynced = sqlite3_column_int(stmt, 8) == 1
             
             list.append(GpsLocationRecord(id: id, latitude: latitude, longitude: longitude, accuracy: accuracy, speed: speed, timestamp: timestamp, batteryLevel: batteryLevel, connectionType: connectionType, isSynced: isSynced))
@@ -846,7 +854,7 @@ class DatabaseManager {
             let speed = Float(sqlite3_column_double(stmt, 4))
             let timestamp = sqlite3_column_int64(stmt, 5)
             let batteryLevel = Int(sqlite3_column_int(stmt, 6))
-            let connectionType = String(cString: sqlite3_column_text(stmt, 7))
+            let connectionType = readString(stmt, 7)
             let isSynced = sqlite3_column_int(stmt, 8) == 1
             
             record = GpsLocationRecord(id: id, latitude: latitude, longitude: longitude, accuracy: accuracy, speed: speed, timestamp: timestamp, batteryLevel: batteryLevel, connectionType: connectionType, isSynced: isSynced)
@@ -901,8 +909,8 @@ class DatabaseManager {
         
         while sqlite3_step(stmt) == SQLITE_ROW {
             let id = sqlite3_column_int64(stmt, 0)
-            let title = String(cString: sqlite3_column_text(stmt, 1))
-            let body = String(cString: sqlite3_column_text(stmt, 2))
+            let title = readString(stmt, 1)
+            let body = readString(stmt, 2)
             let date = sqlite3_column_int64(stmt, 3)
             let isRead = sqlite3_column_int(stmt, 4) == 1
             
