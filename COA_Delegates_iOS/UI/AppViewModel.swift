@@ -303,165 +303,155 @@ class AppViewModel: ObservableObject {
         
         db.insertNotification(title: "بدء المزامنة", body: "جاري الاتصال بسيرفر Odoo وبدء مزامنة البيانات...")
         
-        do {
-            guard let uid = await client.authenticateDelegate(username: odooUsername, pass: odooPassword) else {
-                db.insertNotification(title: "فشل الاتصال", body: "فشل الاتصال بـ Odoo. تحقق من الشبكة وبيانات الدخول.")
-                isSyncing = false
-                return
+        guard let uid = await client.authenticateDelegate(username: odooUsername, pass: odooPassword) else {
+            db.insertNotification(title: "فشل الاتصال", body: "فشل الاتصال بـ Odoo. تحقق من الشبكة وبيانات الدخول.")
+            isSyncing = false
+            return
+        }
+        
+        delegateOdooUid = uid
+        defaults.set(uid, forKey: "odoo_uid")
+        
+        // 0. Sync GPS Locations
+        let unsyncedLocations = db.getUnsyncedLocations()
+        if !unsyncedLocations.isEmpty {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            formatter.timeZone = TimeZone(abbreviation: "UTC")
+            
+            let uploadInputs = unsyncedLocations.map { loc in
+                let dateStr = formatter.string(from: Date(timeIntervalSince1970: Double(loc.timestamp) / 1000))
+                return OdooLocationInput(
+                    latitude: loc.latitude,
+                    longitude: loc.longitude,
+                    timestamp: dateStr,
+                    batteryLevel: loc.batteryLevel,
+                    speed: Double(loc.speed)
+                )
             }
             
-            delegateOdooUid = uid
-            defaults.set(uid, forKey: "odoo_uid")
-            
-            // 0. Sync GPS Locations
-            let unsyncedLocations = db.getUnsyncedLocations()
-            if !unsyncedLocations.isEmpty {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-                formatter.timeZone = TimeZone(abbreviation: "UTC")
-                
-                let uploadInputs = unsyncedLocations.map { loc in
-                    let dateStr = formatter.string(from: Date(timeIntervalSince1970: Double(loc.timestamp) / 1000))
-                    return OdooLocationInput(
-                        latitude: loc.latitude,
-                        longitude: loc.longitude,
-                        timestamp: dateStr,
-                        batteryLevel: loc.batteryLevel,
-                        speed: Double(loc.speed)
-                    )
-                }
-                
-                let locsSuccess = await client.uploadLocations(uid: uid, pass: odooPassword, locations: uploadInputs)
-                if locsSuccess {
-                    for loc in unsyncedLocations {
-                        db.markLocationAsSynced(id: loc.id)
-                    }
+            let locsSuccess = await client.uploadLocations(uid: uid, pass: odooPassword, locations: uploadInputs)
+            if locsSuccess {
+                for loc in unsyncedLocations {
+                    db.markLocationAsSynced(id: loc.id)
                 }
             }
+        }
+        
+        // 1. Sync Sales Orders
+        let unsyncedOrders = db.getUnsyncedOrders()
+        var ordersSyncedCount = 0
+        for localOrder in unsyncedOrders {
+            guard let customer = db.getCustomerById(localOrder.customerId) else { continue }
+            let customerOdooId = customer.odooId
             
-            // 1. Sync Sales Orders
-            let unsyncedOrders = db.getUnsyncedOrders()
-            var ordersSyncedCount = 0
-            for localOrder in unsyncedOrders {
-                guard let customer = db.getCustomerById(localOrder.customerId) else { continue }
-                var customerOdooId = customer.odooId
-                
-                if customerOdooId == nil {
-                    // Create customer on Odoo first
-                    // Simulating Odoo customer creation returning Int
-                    // Let's assume we fetch or create, OdooClient has a general authenticate
-                }
-                
-                let items = db.getSalesOrderItems(orderId: localOrder.id)
-                let odooItems = items.map { item in
-                    OdooOrderItem(productOdooId: Int(item.productId), quantity: item.quantity, unitPrice: item.unitPrice)
-                }
-                
-                if let customerId = customerOdooId, !odooItems.isEmpty {
-                    let orderOdooId = await client.createSaleOrder(
-                        uid: uid,
-                        customerOdooId: customerId,
-                        items: odooItems,
-                        notes: localOrder.notes,
-                        salespersonId: delegateOdooUid
-                    )
-                    
-                    if let oId = orderOdooId {
-                        db.updateSalesOrderSync(id: localOrder.id, odooId: oId)
-                        ordersSyncedCount += 1
-                    }
-                }
+            let items = db.getSalesOrderItems(orderId: localOrder.id)
+            let odooItems = items.map { item in
+                OdooOrderItem(productOdooId: Int(item.productId), quantity: item.quantity, unitPrice: item.unitPrice)
             }
             
-            // 2. Sync Payments
-            let unsyncedPayments = db.getUnsyncedPayments()
-            var paymentsSyncedCount = 0
-            for localPayment in unsyncedPayments {
-                guard let customer = db.getCustomerById(localPayment.customerId),
-                      let customerId = customer.odooId else { continue }
-                
-                let memo = "\(localPayment.notes) (مستند محلي #\(localPayment.id))"
-                let paymentOdooId = await client.createPayment(
+            if let customerId = customerOdooId, !odooItems.isEmpty {
+                let orderOdooId = await client.createSaleOrder(
                     uid: uid,
                     customerOdooId: customerId,
-                    amount: localPayment.amount,
-                    notes: memo
+                    items: odooItems,
+                    notes: localOrder.notes,
+                    salespersonId: delegateOdooUid
                 )
                 
-                if let pId = paymentOdooId {
-                    db.updatePaymentSync(id: localPayment.id, odooId: pId)
-                    paymentsSyncedCount += 1
+                if let oId = orderOdooId {
+                    db.updateSalesOrderSync(id: localOrder.id, odooId: oId)
+                    ordersSyncedCount += 1
                 }
             }
-            
-            // 3. Fetch Updated Customers
-            let odooCustomers = await client.getCustomers(uid: uid)
-            for oc in odooCustomers {
-                if let existing = db.getCustomerByOdooId(oc.odooId) {
-                    _ = db.updateCustomer(c: CustomerRecord(
-                        id: existing.id,
-                        odooId: oc.odooId,
-                        name: oc.name,
-                        address: oc.address,
-                        phone: oc.phone,
-                        email: oc.email,
-                        balance: oc.balance,
-                        isSynced: true,
-                        createdAt: existing.createdAt
-                    ))
-                } else {
-                    _ = db.insertCustomer(c: CustomerRecord(
-                        id: 0,
-                        odooId: oc.odooId,
-                        name: oc.name,
-                        address: oc.address,
-                        phone: oc.phone,
-                        email: oc.email,
-                        balance: oc.balance,
-                        isSynced: true,
-                        createdAt: Int64(Date().timeIntervalSince1970 * 1000)
-                    ))
-                }
-            }
-            
-            // 4. Fetch Updated Products
-            let odooProducts = await client.getProducts(uid: uid)
-            for op in odooProducts {
-                if let existing = db.getProductByOdooId(op.odooId) {
-                    _ = db.updateProduct(p: ProductRecord(
-                        id: existing.id,
-                        odooId: op.odooId,
-                        name: op.name,
-                        sku: op.sku,
-                        price: op.price,
-                        stockQty: op.stockQty,
-                        category: op.category,
-                        unit: op.unit,
-                        isSynced: true
-                    ))
-                } else {
-                    _ = db.insertProduct(p: ProductRecord(
-                        id: 0,
-                        odooId: op.odooId,
-                        name: op.name,
-                        sku: op.sku,
-                        price: op.price,
-                        stockQty: op.stockQty,
-                        category: op.category,
-                        unit: op.unit,
-                        isSynced: true
-                    ))
-                }
-            }
-            
-            db.insertNotification(
-                title: "مزامنة Odoo ناجحة",
-                body: "تم بنجاح رفع عدد \(ordersSyncedCount) فواتير و \(paymentsSyncedCount) مدفوعات، وتحديث المنتجات والعملاء من أودو."
-            )
-            loadLocalData()
-        } catch {
-            db.insertNotification(title: "فشل المزامنة", body: "حدث خطأ أثناء المزامنة: \(error.localizedDescription)")
         }
+        
+        // 2. Sync Payments
+        let unsyncedPayments = db.getUnsyncedPayments()
+        var paymentsSyncedCount = 0
+        for localPayment in unsyncedPayments {
+            guard let customer = db.getCustomerById(localPayment.customerId),
+                  let customerId = customer.odooId else { continue }
+            
+            let memo = "\(localPayment.notes) (مستند محلي #\(localPayment.id))"
+            let paymentOdooId = await client.createPayment(
+                uid: uid,
+                customerOdooId: customerId,
+                amount: localPayment.amount,
+                notes: memo
+            )
+            
+            if let pId = paymentOdooId {
+                db.updatePaymentSync(id: localPayment.id, odooId: pId)
+                paymentsSyncedCount += 1
+            }
+        }
+        
+        // 3. Fetch Updated Customers
+        let odooCustomers = await client.getCustomers(uid: uid)
+        for oc in odooCustomers {
+            if let existing = db.getCustomerByOdooId(oc.odooId) {
+                _ = db.updateCustomer(c: CustomerRecord(
+                    id: existing.id,
+                    odooId: oc.odooId,
+                    name: oc.name,
+                    address: oc.address,
+                    phone: oc.phone,
+                    email: oc.email,
+                    balance: oc.balance,
+                    isSynced: true,
+                    createdAt: existing.createdAt
+                ))
+            } else {
+                _ = db.insertCustomer(c: CustomerRecord(
+                    id: 0,
+                    odooId: oc.odooId,
+                    name: oc.name,
+                    address: oc.address,
+                    phone: oc.phone,
+                    email: oc.email,
+                    balance: oc.balance,
+                    isSynced: true,
+                    createdAt: Int64(Date().timeIntervalSince1970 * 1000)
+                ))
+            }
+        }
+        
+        // 4. Fetch Updated Products
+        let odooProducts = await client.getProducts(uid: uid)
+        for op in odooProducts {
+            if let existing = db.getProductByOdooId(op.odooId) {
+                _ = db.updateProduct(p: ProductRecord(
+                    id: existing.id,
+                    odooId: op.odooId,
+                    name: op.name,
+                    sku: op.sku,
+                    price: op.price,
+                    stockQty: op.stockQty,
+                    category: op.category,
+                    unit: op.unit,
+                    isSynced: true
+                ))
+            } else {
+                _ = db.insertProduct(p: ProductRecord(
+                    id: 0,
+                    odooId: op.odooId,
+                    name: op.name,
+                    sku: op.sku,
+                    price: op.price,
+                    stockQty: op.stockQty,
+                    category: op.category,
+                    unit: op.unit,
+                    isSynced: true
+                ))
+            }
+        }
+        
+        db.insertNotification(
+            title: "مزامنة Odoo ناجحة",
+            body: "تم بنجاح رفع عدد \(ordersSyncedCount) فواتير و \(paymentsSyncedCount) مدفوعات، وتحديث المنتجات والعملاء من أودو."
+        )
+        loadLocalData()
         
         isSyncing = false
     }
