@@ -465,4 +465,14 @@ class AppViewModel: ObservableObject {
         
         isSyncing = false
     }
+    
+    func markAllNotificationsAsRead() {
+        db.markAllNotificationsAsRead()
+        loadLocalData()
+    }
+    
+    func markNotificationAsRead(id: Int64) {
+        db.markNotificationAsRead(id: id)
+        loadLocalData()
+    }
 }

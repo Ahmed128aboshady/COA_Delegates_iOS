@@ -235,8 +235,8 @@ struct ContentView: View {
         case .notifications:
             NotificationsScreen(
                 notifications: viewModel.notifications,
-                onMarkAllRead: { viewModel.db.markAllNotificationsAsRead(); viewModel.loadLocalData() },
-                onNotificationClick: { id in viewModel.db.markNotificationAsRead(id: id); viewModel.loadLocalData() },
+                onMarkAllRead: { viewModel.markAllNotificationsAsRead() },
+                onNotificationClick: { id in viewModel.markNotificationAsRead(id: id) },
                 onBack: { router.goBack() }
             )
             
