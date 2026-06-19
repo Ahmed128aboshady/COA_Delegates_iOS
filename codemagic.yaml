@@ -1,0 +1,38 @@
+# Codemagic CI/CD Build Configuration for COA Delegates iOS
+workflows:
+  ios-build:
+    name: Build COA Delegates iOS
+    max_build_duration: 30
+    instance_type: mac_mini_m1
+    environment:
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events:
+        - push
+        - tag
+      branch_patterns:
+        - pattern: '*'
+          include: true
+    scripts:
+      - name: Initialize Xcode Project structure
+        script: |
+          echo "Xcode project initialization..."
+      - name: Build Unsigned iOS App (.app)
+        script: |
+          xcodebuild \
+            -project COA_Delegates_iOS.xcodeproj \
+            -scheme COA_Delegates_iOS \
+            -sdk iphoneos \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            clean build
+      - name: Packaging simulator and unsigned build
+        script: |
+          mkdir -p build
+          # Archive app product for output
+          cp -r ~/Library/Developer/Xcode/DerivedData/*/Build/Products/Release-iphoneos/COA_Delegates_iOS.app build/ 2>/dev/null || cp -r build/Release-iphoneos/COA_Delegates_iOS.app build/ 2>/dev/null || true
+    artifacts:
+      - build/*.app
+      - build/**/*.app
