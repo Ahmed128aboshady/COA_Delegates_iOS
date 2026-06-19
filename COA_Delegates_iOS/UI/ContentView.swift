@@ -149,8 +149,12 @@ struct ContentView: View {
                             .zIndex(1)
                     }
                 }
+                
+            default:
+                EmptyView()
             }
         }
+
         .animation(.default, value: router.currentScreen)
         .onAppear {
             // Apply customized styling to tab bar
