@@ -1,11 +1,17 @@
 import Foundation
 import Combine
 import SwiftUI
+import Network
 
 @MainActor
 class AppViewModel: ObservableObject {
     private let db = DatabaseManager.shared
     private let client = OdooClient()
+
+    // Network State
+    @Published var isConnected = true
+    private let pathMonitor = NWPathMonitor()
+
     
     // Auth States
     @Published var isLoggedIn = false
@@ -38,6 +44,15 @@ class AppViewModel: ObservableObject {
     init() {
         checkSession()
         loadLocalData()
+
+        // Monitor network status
+        pathMonitor.pathUpdateHandler = { [weak self] path in
+            Task { @MainActor in
+                self?.isConnected = path.status == .satisfied
+            }
+        }
+        pathMonitor.start(queue: DispatchQueue.global(qos: .background))
+
         
         // Monitor GPS coordinator changes from LocationManager
         LocationManager.shared.$lastLocation
